@@ -1,4 +1,5 @@
 import redis
+import logging
 
 class Config(object):
     SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@127.0.0.1:3306/'
@@ -17,9 +18,12 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    LOG_LEVEL = logging.DEBUG
+
 
 class ProductionConfig(Config):
     DEBUG = False
+    LOG_LEVEL = logging.WARNING
 
 
 config = {
