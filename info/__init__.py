@@ -4,6 +4,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 from flask import Flask
 from config import config
+from .modules.index.views import index_bp
 
 
 db = SQLAlchemy()
@@ -12,7 +13,7 @@ def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     db.init_app(app)
-
+    app.register_blueprint(index_bp)
     global redis_store
     redis_store = redis.StrictRedis(host=config[config_name].REDIS_HOST,
                                     port=config[config_name].REDIS_PORT,
