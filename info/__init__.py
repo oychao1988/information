@@ -34,8 +34,9 @@ def create_app(config_name):
     global redis_store
     redis_store = redis.StrictRedis(host=config[config_name].REDIS_HOST,
                                     port=config[config_name].REDIS_PORT,
-                                    db=config[config_name].REIDS_NUM)
-    csrf = CSRFProtect(app)
+                                    db=config[config_name].REIDS_NUM,
+                                    decode_responses=True)
+    # csrf = CSRFProtect(app)
     Session(app)
 
     from info.modules.index.views import index_bp

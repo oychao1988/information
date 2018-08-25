@@ -2,3 +2,4 @@
 *.py[cod]
 logs/log*
 migrations/
+*.rdb

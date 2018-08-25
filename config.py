@@ -7,7 +7,7 @@ class Config(object):
 
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
-    REIDS_NUM = 1
+    REIDS_NUM = 0
 
     SECRET_KEY = 'oychao'
 
