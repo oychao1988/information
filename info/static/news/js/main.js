@@ -152,6 +152,12 @@ var imageCodeId = ""
 
 // TODO 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
+        //1.生成随机的编号
+        imageCodeId = generateUUID()
+        //2.构建url
+        var url = "/passport/image_code?imageCodeId=" + imageCodeId
+        //3.发送get请求获取一张图片
+        $(".get_pic_code").attr("src", url)
 
 }
 
@@ -174,7 +180,68 @@ function sendSMSCode() {
         return;
     }
 
+    // 构建请求参数 js对象
+    var params = {
+        "mobile": mobile,
+        "image_code": imageCode,
+        "image_code_id": imageCodeId
+    }
+
     // TODO 发送短信验证码
+    $.ajax({
+        url: "/passport/sms_code",
+        type: "post",
+        //将js对象转换成json字符串
+        data: JSON.stringify(params),
+        //指明发送给后台的数据是json格式
+        contentType: "application/json",
+        //接受到后台的数据为json格式
+        dataType: "json",
+        success: function (resp) {
+            if(resp.errno == 0){
+                //发送短信验证码成功的回调
+                // 创建定时器
+                // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
+                var num = 60;
+                // 设置一个计时器
+                var t = setInterval(function () {
+                    if (num == 1) {
+                        // 如果计时器到最后, 清除计时器对象
+                        clearInterval(t);
+                        // 将点击获取验证码的按钮展示的文本回复成原始文本
+                        $(".get_code").html("获取验证码");
+                        // 将点击按钮的onclick事件函数恢复回去
+                        $(".get_code").attr("onclick", "sendSMSCode();");
+                    } else {
+                        num -= 1;
+                        // 展示倒计时信息
+                        $(".get_code").html(num + "秒");
+                    }
+                }, 1000)
+
+
+            }else{
+                // 发送短信验证码失败
+                // 表示后端出现了错误，可以将错误信息展示到前端页面中
+                $("#register-sms-code-err").html(resp.errmsg);
+                $("#register-sms-code-err").show();
+
+                // 将点击按钮的onclick事件函数恢复回去
+                $(".get_code").attr("onclick", "sendSMSCode();");
+
+                // 如果错误码是4004，代表验证码错误，重新生成验证码
+                if (resp.errno == "4004") {
+                    // 当图片验证码填写错误之后重新生成一张验证码图片
+                    generateImageCode()
+                }
+
+            }
+
+        }
+
+    })
+
+
 }
 
 // 调用该函数模拟点击左侧按钮
