@@ -1,11 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
 import redis
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_session import Session
 from flask import Flask
 from config import config
 import logging
 from logging.handlers import RotatingFileHandler
+from info.utils.common import do_index_class
 
 
 
@@ -36,7 +37,15 @@ def create_app(config_name):
                                     port=config[config_name].REDIS_PORT,
                                     db=config[config_name].REIDS_NUM,
                                     decode_responses=True)
-    # csrf = CSRFProtect(app)
+    csrf = CSRFProtect(app)
+
+    @app.after_request
+    def set_csrf_token(response):
+        csrf_token = generate_csrf()
+        response.set_cookie('csrf_token', csrf_token)
+        return response
+
+    app.add_template_filter(do_index_class, 'do_index_class')
     Session(app)
 
     from info.modules.index.views import index_bp
@@ -47,4 +56,6 @@ def create_app(config_name):
 
 
     return app
+
+
 

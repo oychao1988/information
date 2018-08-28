@@ -110,9 +110,32 @@ $(function(){
         }
 
         // 发起登录请求
+        var params = {
+            'mobile': mobile,
+            'password': password
+        }
+
+            $.ajax({
+                url: '/passport/login',
+                type: 'post',
+                data: JSON.stringify(params),
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {'X-CSRFToken': getCookie('csrf_token')},
+                success: function(resp){
+                    if(resp.errno==0){
+                        location.reload()
+                    }else{
+                        $('#login-password-err').html(resp.errmsg)
+                        $('#login-password-err').show()
+                    }
+                }
+            })
     })
 
 
+    // $('.user_login').children('a').eq(1).attr('onclick', logout)
+    // console.log($('.user_login').children('a'))
     // TODO 注册按钮点击
     $(".register_form_con").submit(function (e) {
         // 阻止默认提交操作
@@ -145,6 +168,28 @@ $(function(){
 
         // 发起注册请求
 
+        var params = {
+            'mobile': mobile,
+            'smsCode': smscode,
+            'password': password
+        }
+
+        $.ajax({
+            url: '/passport/register',
+            type: 'post',
+            data: JSON.stringify(params),
+            contentType: 'application/json',
+            dataType: 'json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno == 0){
+                    location.reload()
+                }else{
+                    $('#register-password-err').html(resp.errmsg)
+                    $('#register-password-err').show()
+                }
+            }
+        })
     })
 })
 
@@ -249,17 +294,18 @@ function sendSMSCode() {
     $.ajax({
         url: '/passport/sms_code',
         type: 'post',
-        data: JSON.Stringify(params),
+        data: JSON.stringify(params),
         contentType: 'application/json',
         dataType: 'json',
+        headers: {'X-CSRFToken': getCookie('csrf_token')},
         success: function(resp){
-            if(resp){
+            if(resp.errno == 0){
                 var num = 60
                 var t = setInterval(function(){
                     if(num == 1){
                         clearInterval(t)
                         $('.get_code').html('获取验证码')
-                        $('.get_code').attr('onclick', 'SendSMSCode();')
+                        $('.get_code').attr('onclick', 'sendSMSCode();')
                     }else{
                         num -= 1
                         $('.get_code').html(num + '秒')
@@ -268,7 +314,7 @@ function sendSMSCode() {
             }else{
                 $('#register-sms-code-err').html(resp.errmsg)
                 $('#register-sms-code-err').show()
-                $('.get_code').attr('onclick', 'SendSMSCode();')
+                $('.get_code').attr('onclick', 'sendSMSCode();')
                 if(resp.errno == '4004'){
                     generateImageCode()
                 }
@@ -276,7 +322,19 @@ function sendSMSCode() {
         }
     })
 }
-
+function logout(){
+        $.ajax({
+            url: '/passport/logout',
+            type: 'post',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno==0){
+                    location.reload()
+                }
+            }
+        })
+    }
 // 调用该函数模拟点击左侧按钮
 function fnChangeMenu(n) {
     var $li = $('.option_list li');
