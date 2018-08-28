@@ -37,7 +37,7 @@ def get_news_list():
     per_page = request.args.get('per_page', constants.HOME_PAGE_MAX_NEWS)
 
     try:
-        cid = int(cid)
+        cid = int(cid) + 1
         page = int(page)
         per_page = int(per_page)
     except Exception as e:
@@ -45,8 +45,10 @@ def get_news_list():
         return jsonify(errno=RET.PARAMERR, errmsg='参数错误')
 
     filters = []
+    # print('cid=', cid)
     if cid != 1:
         filters.append(News.category_id == cid)
+    # print('filters:', filters)
 
     try:
         paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, per_page, False)
@@ -66,6 +68,9 @@ def get_news_list():
         'current_page': current_page,
         'total_page': total_page
            }
+    print('current_page', current_page)
+    print('total_page', total_page)
+    # print('news_dict_list:', len(news_dict_list))
     return jsonify(errno=RET.OK, errmsg='查询新闻列表', data=data)
 
 @index_bp.route('/favicon.ico')
