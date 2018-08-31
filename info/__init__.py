@@ -55,6 +55,8 @@ def create_app(config_name):
     from info.modules.passport.views import passport_bp
     app.register_blueprint(passport_bp)
 
+    from info.modules.news.views import news_bp
+    app.register_blueprint(news_bp)
 
     return app
 
