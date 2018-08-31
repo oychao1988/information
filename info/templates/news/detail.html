@@ -38,8 +38,8 @@
 {#        <p>#}
 {#        昨天晚间，中国平安公布2017年保费收入，全年该集团控股子公司平安财险、平安人寿、平安养老、平安健康原保险合同保费收入分别为2159.84亿元、3689.34亿元、175.6亿元及21.47亿元，合计约6046.26亿元人民币，同比增28.9%。除此以外，市场传出中国平安旗下的陆金所将于4月分拆于香港上市，估值达600亿美元。</p>#}
 
-        <a href="javascript:;" class="collection block-center">收藏</a>
-        <a href="javascript:;" class="collected block-center" style="display: none"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
+        <a href="javascript:;" data-newsid="{{ data.news.id }}" class="collection block-center" style="display:{% if data.is_collected %}none{% else %}block{% endif %}">收藏</a>
+        <a href="javascript:;" data-newsid="{{ data.news.id }}" class="collected block-center" style="display:{% if data.is_collected %}block{% else %}none{% endif %}"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
 
         <div class="comment_form_logout">
             登录发表你的评论

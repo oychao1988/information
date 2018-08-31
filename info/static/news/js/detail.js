@@ -13,14 +13,60 @@ $(function(){
 
     // 收藏
     $(".collection").click(function () {
-
-       
+        var params = {
+            'news_id': $(this).attr('data-newsid'),
+            'action': 'collect'
+        }
+        $.ajax({
+            url: '/news/news_collect',
+            type: 'post',
+            data: JSON.stringify(params),
+            contentType: 'application/json',
+            datatype: 'json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno==0){
+                    // 隐藏收藏按钮
+                    $(".collection").hide();
+                    // 显示取消收藏按钮
+                    $(".collected").show();
+                }else{
+                    if(resp.errno==4101){
+                        $('.login_form_con').show();
+                    }else{
+                        console.log(resp.errmsg)
+                    }
+                }
+            }
+        })
     })
 
     // 取消收藏
     $(".collected").click(function () {
-
-     
+        var params = {
+            'news_id': $(this).attr('data-newsid'),
+            'action': 'cancel_collect'
+        }
+        $.ajax({
+            url: '/news/news_collect',
+            type: 'post',
+            data: JSON.stringify(params),
+            contentType: 'application/json',
+            datatype: 'json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno==0){
+                    $('.collected').hide()
+                    $('.collection').show()
+                }else{
+                    if(resp.errno==4101){
+                        $('.login_form_con').show();
+                    }else{
+                        console.log(resp.errmsg)
+                    }
+                }
+            }
+        })
     })
 
         // 评论提交
