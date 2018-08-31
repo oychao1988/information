@@ -1,13 +1,14 @@
-from flask_sqlalchemy import SQLAlchemy
+import logging
+from logging.handlers import RotatingFileHandler
+
 import redis
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_session import Session
 from flask import Flask
-from config import config
-import logging
-from logging.handlers import RotatingFileHandler
-from info.utils.common import do_index_class
 
+from config import config
+from info.utils.common import do_index_class
 
 
 db = SQLAlchemy()

@@ -14,17 +14,14 @@
         <div class="header">
             <a href="#" class="logo fl"><img src="../static/news/images/logo.png" alt="logo"></a>
             <ul class="menu fl">
-                <li class="active" data-cid="0"><a href="javascript:;">最新</a></li>
-                <li data-cid="1"><a href="javascript:;">股市</a></li>
-                <li data-cid="2"><a href="javascript:;">债市</a></li>
-                <li data-cid="3"><a href="javascript:;">商品</a></li>
-                <li data-cid="4"><a href="javascript:;">外汇</a></li>
-                <li data-cid="5"><a href="javascript:;">公司</a></li>
+                {% for category in data.categories %}
+                    <li class="{% if category.id == 1 %}active{% else %}none{% endif %}" data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
+                {% endfor %}
             </ul>
             {% if data.user_info %}
                 <div class="user_login fr">
-                    <img src="../static/news/images/person01.png" class="lgin_pic">
-                    <a href="#">用户张三</a>
+                    <img src="{% if data.user_info %}{{ data.user_info.avatar_url }}{% else %}../static/news/images/person01.png{% endif %}" class="lgin_pic">
+                    <a href="#">{{ data.user_info.nick_name }}</a>
                     <a href="javascript:;" onclick="logout()">退出</a>
                 </div>
             {% else %}
