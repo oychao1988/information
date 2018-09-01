@@ -7,7 +7,7 @@ from flask import url_for
 
 from info import constants
 from info import db
-from info.models import News
+from info.models import News, Category
 from info.utlis.common import login_user_info
 from info.utlis.image_storage import qiniu_image_store
 from info.utlis.response_code import RET
@@ -158,3 +158,67 @@ def user_collection():
     }
 
     return render_template('user/user_collection.html', data=data)
+
+@profile_bp.route('/news_release', methods=['GET', 'POST'])
+@login_user_info
+def news_release():
+    user = g.user
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+
+    if request.method == 'GET':
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+        category_dict_list = []
+        for category in categories if categories else []:
+            category_dict_list.append(category.to_dict())
+        category_dict_list.pop(0)
+        return render_template('user/user_news_release.html', data={'categories': category_dict_list})
+
+    # 获取参数
+    title = request.form.get('title')
+    category_id = request.form.get('category_id')
+    digest = request.form.get('digest')
+    content = request.form.get('content')
+    index_image = request.files.get('index_image')
+    source = '个人发布'
+    print(request.form)
+    # 校验参数
+    if not all([title, category_id, digest, content, index_image]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
+    try:
+        category_id = int(category_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg='新闻类别格式错误')
+
+    index_image = index_image.read()
+    # 保存图片到七牛云
+    try:
+        index_image_url = qiniu_image_store(index_image)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.THIRDERR, errmsg='七牛云上传图片失败')
+
+    # 创建新闻模型
+    news = News()
+    news.title = title
+    news.digest = digest
+    news.category_id = category_id
+    news.index_image_url = constants.QINIU_DOMIN_PREFIX + index_image_url
+    news.content = content
+    news.status = 0
+    news.source = source
+    # 买什么涨什么
+    try:
+        db.session.add(news)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='保存新闻到数据库失败')
+
+    return jsonify(errno=RET.OK, errmsg='新闻发布成功')
