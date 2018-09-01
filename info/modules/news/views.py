@@ -6,7 +6,7 @@ from flask import render_template
 from flask import request
 
 from info import constants, db
-from info.models import News, tb_user_collection
+from info.models import News, tb_user_collection, Comment
 from info.utils.common import login_user_info
 from info.utils.response_code import RET
 from . import news_bp
@@ -43,11 +43,21 @@ def detail(news_id):
     if user and (news in user.collection_news):
         is_collected = True
 
+    # 查询评论信息
+    comments = None
+    try:
+        comments = Comment.query.filter(Comment.news_id==news_id).order_by(Comment.create_time.desc())
+    except Exception as e:
+        current_app.logger.error(e)
+    comment_dict_list = []
+    for comment in comments if comments else []:
+        comment_dict_list.append(comment.to_dict())
     data = {
         'user_info': user.to_dict() if user else [],
         'newsClicksList': news_dict_list,
         'news': news.to_dict(),
         'is_collected': is_collected,
+        'comments': comment_dict_list
     }
     return render_template('news/detail.html', data=data)
 
@@ -80,6 +90,7 @@ def news_collect():
     if not news:
         return jsonify(errno=RET.NODATA, errmsg='该新闻不存在')
 
+    # 判断是否收藏
     if action == 'collect':
         user.collection_news.append(news)
     else:
@@ -92,3 +103,52 @@ def news_collect():
         return jsonify(errno=RET.DBERR, errmsg='数据库收藏操作失败')
     #返回值处理
     return jsonify(errno=RET.OK, errmsg='操作成功')
+
+
+@news_bp.route('/news_comment', methods=['POST'])
+@login_user_info
+def news_comment():
+    user = g.user
+    # 获取参数
+    params_dict = request.json
+    news_id = params_dict.get('news_id')
+    content = params_dict.get('comment')
+    parent_id = params_dict.get('parent_id')
+    print(params_dict)
+    # 验证用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+
+    # 参数校验
+    if not all([news_id, content]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
+
+    # 检查新闻是否存在
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询新闻失败')
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg='该新闻不存在')
+
+    # 添加评论
+    comment = Comment()
+    comment.user_id = user.id
+    comment.news_id = news.id
+    comment.content = content
+    if parent_id:
+        comment.parent_id = parent_id
+    try:
+        db.session.add(comment)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库添加评论失败')
+
+    # 组织返回数据
+    data = comment.to_dict()
+    data['user'] = user.to_dict()
+    return jsonify(errno=RET.OK, errmsg='评论成功', data=data)
