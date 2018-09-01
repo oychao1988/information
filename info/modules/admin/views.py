@@ -20,8 +20,8 @@ def admin_login():
         is_admin = None
 
         if user:
-            user_id = session['user_id']
-            is_admin = session['is_admin']
+            user_id = session.get('user_id')
+            is_admin = session.get('is_admin')
 
         if user_id and is_admin:
             return redirect(url_for('admin_bp.admin_index'))
@@ -54,6 +54,8 @@ def admin_login():
     session['is_admin'] = True
     return redirect(url_for('admin_bp.admin_index'))
 
-@admin_bp.route('/index')
+@admin_bp.route('/index', methods=['GET', 'POST'])
+@login_user_info
 def admin_index():
-    return render_template('admin/index.html')
+    user = g.user
+    return render_template('admin/index.html', data={'user_info': user.to_dict() if user else []})
