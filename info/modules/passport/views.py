@@ -132,6 +132,7 @@ def register():
     session['user_id'] = user.id
     session['mobile'] = user.mobile
     session['nick_name'] = user.nick_name
+    session['is_admin'] = user.is_admin
     # 返回值处理
     return jsonify(errno=RET.OK, errmsg='注册成功')
 
@@ -157,6 +158,7 @@ def login():
     session['user_id'] = user.id
     session['mobile'] = user.mobile
     session['nick_name'] = user.nick_name
+    session['is_admin'] = user.is_admin
     # 逻辑处理
     try:
         db.session.commit()
@@ -172,4 +174,5 @@ def logout():
     session.pop('user_id')
     session.pop('mobile')
     session.pop('nick_name')
+    session.pop('is_admin')
     return jsonify(errno=RET.OK, errmsg='登出成功')
