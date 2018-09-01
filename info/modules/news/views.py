@@ -6,7 +6,7 @@ from flask import render_template
 from flask import request
 
 from info import constants, db
-from info.models import News, tb_user_collection, Comment
+from info.models import News, tb_user_collection, Comment, CommentLike, User
 from info.utils.common import login_user_info
 from info.utils.response_code import RET
 from . import news_bp
@@ -52,12 +52,29 @@ def detail(news_id):
     comment_dict_list = []
     for comment in comments if comments else []:
         comment_dict_list.append(comment.to_dict())
+
+    # 查询点赞信息
+    if user:
+        commentLike_id = []
+        # 在这条新闻内的评论
+        comment_id = [comment.id for comment in comments]
+        # 这个用户的点赞
+        commentLike = CommentLike.query.filter(CommentLike.comment_id.in_(comment_id),
+                                           CommentLike.user_id==user.id).all()
+        commentLike_id = [liked.comment_id for liked in commentLike if commentLike]
+
+        # 将点赞信息附加到评论字典中
+        for comment in comment_dict_list:
+            if comment['id'] in commentLike_id:
+                comment['is_liked'] = True
+
     data = {
         'user_info': user.to_dict() if user else [],
         'newsClicksList': news_dict_list,
         'news': news.to_dict(),
         'is_collected': is_collected,
-        'comments': comment_dict_list
+        'comments': comment_dict_list,
+        'comment_count': len(comment_dict_list),
     }
     return render_template('news/detail.html', data=data)
 
@@ -152,3 +169,51 @@ def news_comment():
     data = comment.to_dict()
     data['user'] = user.to_dict()
     return jsonify(errno=RET.OK, errmsg='评论成功', data=data)
+
+@news_bp.route('/comment_like', methods=['POST'])
+@login_user_info
+def comment_like():
+    params_dict = request.json
+    comment_id = params_dict.get('comment_id')
+    action = params_dict.get('action')
+    user = g.user
+
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+
+    # 检查评论是否存在
+    comment = None
+    try:
+        comment = Comment.query.get(comment_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询评论失败')
+    if not comment:
+        return jsonify(errno=RET.NODATA, errmsg='该评论不存在')
+
+    # 参数校验
+    if not all([comment_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
+    if action not in ['like', 'unlike']:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数格式错误')
+
+    # 点赞与取消点赞操作
+    if action == 'like':
+        commentLike = CommentLike()
+        commentLike.comment_id = comment_id
+        commentLike.user_id = user.id
+        comment.like_count += 1
+        db.session.add(commentLike)
+    else:
+        commentLike = CommentLike.query.filter(CommentLike.user_id==user.id,
+                                               CommentLike.comment_id==comment_id).first()
+        db.session.delete(commentLike)
+        comment.like_count -= 1
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库操作点赞数据失败')
+    return jsonify(errno=RET.OK, errmsg='操作成功')

@@ -30,7 +30,7 @@
 
             {% if data.user_info %}
                 <div class="user_login fr">
-                    <img src="{% if data.user_info %}{{ data.user_info.avatar_url }}{% else %}../static/news/images/person01.png{% endif %}" class="lgin_pic">
+                    <img src="{% if data.user_info.avatar_url %}{{ data.user_info.avatar_url }}{% else %}../static/news/images/person01.png{% endif %}" class="lgin_pic">
                     <a href="#">{{ data.user_info.nick_name }}</a>
                     <a href="javascript:;" onclick="logout()">退出</a>
                 </div>

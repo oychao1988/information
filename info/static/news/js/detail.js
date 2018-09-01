@@ -82,7 +82,7 @@ $(function(){
             'news_id': news_id,
             'comment': comment,
         }
-        console.log(params)
+        // console.log(params)
         $.ajax({
             url: '/news/news_comment',
             type: 'post',
@@ -125,7 +125,11 @@ $(function(){
                     // 清空输入框内容
                     $(".comment_input").val("")
                 }else{
-                    console.log(resp.errmsg)
+                    if(resp.errno==4101){
+                        $('.login_form_con').show();
+                    }else{
+                        console.log(resp.errmsg)
+                    }
                 }
             }
         })
@@ -145,16 +149,50 @@ $(function(){
             $(this).parent().toggle();
         }
 
+        // 点赞
         if(sHandler.indexOf('comment_up')>=0)
         {
             var $this = $(this);
+            var comment_id = $this.attr('data-commentid')
+
             if(sHandler.indexOf('has_comment_up')>=0)
             {
                 // 如果当前该评论已经是点赞状态，再次点击会进行到此代码块内，代表要取消点赞
-                $this.removeClass('has_comment_up')
+                // $this.removeClass('has_comment_up')
+                var action = 'unlike'
             }else {
-                $this.addClass('has_comment_up')
+                // $this.addClass('has_comment_up')
+                var action = 'like'
             }
+            params = {
+                    'comment_id': comment_id,
+                    'action': action
+            }
+            $.ajax({
+                url: '/news/comment_like',
+                type: 'post',
+                data: JSON.stringify(params),
+                contentType: 'application/json',
+                dataType: 'json',
+                headers: {'X-CSRFToken': getCookie('csrf_token')},
+                success: function(resp){
+                    if(resp.errno==0){
+                        if(action=='unlike'){
+                            $this.removeClass('has_comment_up')
+                        }else if(action=='like'){
+                            $this.addClass('has_comment_up')
+                        }
+                        location.reload()
+                    }else{
+                        if(resp.errno==4101){
+                            $('.login_form_con').show();
+                        }else{
+                            console.log(resp.errno)
+                        }
+                    }
+                }
+            })
+
         }
 
         // 回复评论
@@ -220,7 +258,11 @@ $(function(){
                         // 关闭
                         $this.parent().hide()
                     }else{
+                        if(resp.errno==4101){
+                        $('.login_form_con').show();
+                    }else{
                         console.log(resp.errmsg)
+                    }
                     }
                 }
             })

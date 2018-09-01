@@ -28,20 +28,20 @@
 
         <form action="" class="comment_form" data-newsid="{{ data.news.id }}">
             <div class="person_pic">
-                <img src="../../static/news/images/cat.jpg" alt="用户图标">
+                <img src="{% if data.user_info.avatar_url %}{{ data.user_info.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" alt="用户图标">
             </div>
             <textarea placeholder="请发表您的评论" class="comment_input"></textarea>
             <input type="submit" name="" value="评 论" class="comment_sub">
         </form>
 
         <div class="comment_count">
-            4条评论
+            {{ data.comment_count }}条评论
         </div>
         <div class="comment_list_con">
             {% for comment in data.comments %}
                 <div class="comment_list">
                     <div class="person_pic fl">
-                        <img src="{% if comment.user.avatar_url %}{{ comment.user.avatar_url }}{% else %}../../static/news/images/worm.jpg{% endif %}" alt="用户图标">
+                        <img src="{% if comment.user.avatar_url %}{{ comment.user.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" alt="用户图标">
                     </div>
                     <div class="user_name fl">{{ comment.user.nick_name }}</div>
                     <div class="comment_text fl">
@@ -57,7 +57,7 @@
                     </div>
                     {% endif %}
                     <div class="comment_time fl">{{ comment.create_time }}</div>
-                    <a href="javascript:;" class="comment_up has_comment_up fr">1</a>
+                    <a href="javascript:;" data-commentid="{{ comment.id }}" class="comment_up {% if data.user_info and comment.is_liked %}has_comment_up{% endif %} fr">{% if comment.like_count %}{{ comment.like_count }}{% else %}&nbsp;{% endif %}赞</a>
                     <a href="javascript:;" class="comment_reply fr">回复</a>
                     <from class="reply_form fl" data-commentid="{{ comment.id }}" data-newsid="{{ data.news.id }}">
                         <textarea  class="reply_input"></textarea>
