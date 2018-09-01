@@ -5,7 +5,9 @@ from flask import request
 from flask import session
 from flask import url_for
 
+from info import constants
 from info import db
+from info.models import News
 from info.utlis.common import login_user_info
 from info.utlis.image_storage import qiniu_image_store
 from info.utlis.response_code import RET
@@ -120,3 +122,39 @@ def pass_info():
         return jsonify(errno=RET.DBERR, errmsg='数据库修改密码失败')
 
     return jsonify(errno=RET.OK, errmsg='修改密码成功', data={'user_info': user.to_dict()})
+
+@profile_bp.route('/collection')
+@login_user_info
+def user_collection():
+    user = g.user
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+    # 获取参数
+    p = request.args.get('p', 1)
+
+    # 参数校验
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        p = 1
+
+    # 查询收藏新闻列表
+    try:
+        paginate = user.collection_news.paginate(p, constants.USER_COLLECTION_MAX_NEWS)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    # 组织返回值
+    news_list = paginate.items
+    total_page = paginate.pages
+    current_page = paginate.page
+
+    data = {
+        'collections': news_list,
+        'total_page': total_page,
+        'current_page': current_page
+    }
+
+    return render_template('user/user_collection.html', data=data)
