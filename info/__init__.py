@@ -8,7 +8,7 @@ from flask_session import Session
 from flask import Flask
 
 from config import config
-from info.utils.common import do_index_class
+from info.utlis.common import do_index_class
 
 
 db = SQLAlchemy()

@@ -6,10 +6,10 @@ from flask import make_response
 from flask import request
 from flask import session
 
-from info.utils.response_code import RET
+from info.utlis.response_code import RET
 from . import passport_bp
 from info import redis_store
-from info.utils.captcha.captcha import captcha
+from info.utlis.captcha.captcha import captcha
 from info import constants
 from info.models import User
 from info.lib.yuntongxun.sms import CCP

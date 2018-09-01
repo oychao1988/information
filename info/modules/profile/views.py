@@ -6,8 +6,9 @@ from flask import session
 from flask import url_for
 
 from info import db
-from info.utils.common import login_user_info
-from info.utils.response_code import RET
+from info.utlis.common import login_user_info
+from info.utlis.image_storage import qiniu_image_store
+from info.utlis.response_code import RET
 from . import profile_bp
 
 @profile_bp.route('')
@@ -53,3 +54,34 @@ def base_info():
         return jsonify(errno=RET.DBERR, errmsg='数据库修改用户资料失败')
     session['nick_name'] = user.nick_name
     return jsonify(errno=RET.OK, errmsg='修改用户资料成功', data={'user_info': user.to_dict()})
+
+
+@profile_bp.route('/pic_info', methods=['GET', 'POST'])
+@login_user_info
+def pic_info():
+    user = g.user
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+
+    if request.method == 'GET':
+        return render_template('user/user_pic_info.html', data={'user_info': user.to_dict()})
+
+    pic_data = request.files.get('avatar').read()
+    if not pic_data:
+        return jsonify(errno=RET.PARAMERR, errmsg='图片数据为空')
+    try:
+        image_name = qiniu_image_store(pic_data)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.THIRDERR, errmsg='七牛云上传图片失败')
+    if not image_name:
+        return jsonify(errno=RET.PARAMERR, errmsg='图片数据为空')
+    user.avatar_url = image_name
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库保存图片数据失败')
+    return jsonify(errno=RET.OK, errmsg='上传图片成功', data={'user_info': user.to_dict()})

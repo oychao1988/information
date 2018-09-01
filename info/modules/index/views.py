@@ -5,8 +5,8 @@ from flask import request
 
 from info import constants
 from info.models import News, Category
-from info.utils.common import login_user_info
-from info.utils.response_code import RET
+from info.utlis.common import login_user_info
+from info.utlis.response_code import RET
 from . import index_bp
 
 
