@@ -85,3 +85,38 @@ def pic_info():
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库保存图片数据失败')
     return jsonify(errno=RET.OK, errmsg='上传图片成功', data={'user_info': user.to_dict()})
+
+@profile_bp.route('/pass_info', methods=['GET', 'POST'])
+@login_user_info
+def pass_info():
+    user = g.user
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+
+    if request.method == 'GET':
+        return render_template('user/user_pass_info.html', data={'user_info': user.to_dict()})
+
+    # 获取参数
+    params_dict = request.json
+    old_password = params_dict.get('old_password')
+    new_password_1 = params_dict.get('new_password_1')
+    new_password_2 = params_dict.get('new_password_2')
+
+    # 参数校验
+    if not all([old_password, new_password_1, new_password_2]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
+    if new_password_1 != new_password_2:
+        return jsonify(errno=RET.PARAMERR, errmsg='新密码两次输入不一致')
+    if not user.check_passowrd(old_password):
+        return jsonify(errno=RET.PARAMERR, errmsg='旧密码输入错误')
+
+    user.password = new_password_1
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库修改密码失败')
+
+    return jsonify(errno=RET.OK, errmsg='修改密码成功', data={'user_info': user.to_dict()})
