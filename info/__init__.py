@@ -58,6 +58,8 @@ def create_app(config_name):
     from info.modules.news.views import news_bp
     app.register_blueprint(news_bp)
 
+    from info.modules.profile.views import profile_bp
+    app.register_blueprint(profile_bp)
     return app
 
 

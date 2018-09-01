@@ -18,7 +18,7 @@
 <body>
     <div class="header_con">
         <div class="header">
-            <a href="#" class="logo fl"><img src="../static/news/images/logo.png" alt="logo"></a>
+            <a href="/" class="logo fl"><img src="../static/news/images/logo.png" alt="logo"></a>
 
             {% block categoryBlock %}
 {#                <ul class="menu fl">#}
@@ -31,7 +31,7 @@
             {% if data.user_info %}
                 <div class="user_login fr">
                     <img src="{% if data.user_info.avatar_url %}{{ data.user_info.avatar_url }}{% else %}../static/news/images/person01.png{% endif %}" class="lgin_pic">
-                    <a href="#">{{ data.user_info.nick_name }}</a>
+                    <a href="{{ url_for('profile_bp.user_info') }}">{{ data.user_info.nick_name }}</a>
                     <a href="javascript:;" onclick="logout()">退出</a>
                 </div>
             {% else %}
@@ -44,8 +44,9 @@
     </div>
 
     <div class="conter_con">
+    {% block contentBlock %}
         <ul class="list_con fl">
-            {% block contentBlock %}
+
 {#            {% for news in data.newsList %}#}
 {#                {{ news }}#}
 {#            {% endfor %}#}
@@ -95,9 +96,12 @@
 {#                    <div class="time fl">2017-01-01 00:00:00</div>#}
 {#                </div>#}
 {#            </li>#}
-            {% endblock %}
+
         </ul>
+    {% endblock %}
         <div class="rank_con fr">
+            {% block authorBlock %}
+            {% endblock %}
             {% block rankBlock %}
 {#            <div class="rank_title">#}
 {#                <h3>点击排行</h3>#}
@@ -116,6 +120,7 @@
             {% endblock %}
         </div>
     </div>
+    {% block bottmoBlock %}
     <div class="footer">
         <div class="footer_links">
             <a href="">关于我们</a>
@@ -131,6 +136,7 @@
 电话：010-****888    京ICP备*******8号
         </p>
     </div>
+    {% endblock %}
 
     <!-- 登录表单 -->
     <form class="login_form_con">

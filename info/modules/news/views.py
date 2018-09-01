@@ -216,4 +216,5 @@ def comment_like():
         db.session.rollback()
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库操作点赞数据失败')
+
     return jsonify(errno=RET.OK, errmsg='操作成功')
