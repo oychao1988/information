@@ -8,8 +8,7 @@ from flask_session import Session
 from flask import Flask
 
 from config import config
-from info.utlis.common import do_index_class
-
+from info.utlis.common import do_index_class, do_news_status_class, do_news_status
 
 db = SQLAlchemy()
 redis_store = None
@@ -47,6 +46,9 @@ def create_app(config_name):
         return response
 
     app.add_template_filter(do_index_class, 'do_index_class')
+    app.add_template_filter(do_news_status_class, 'do_news_status_class')
+    app.add_template_filter(do_news_status, 'do_news_status')
+
     Session(app)
 
     from info.modules.index.views import index_bp

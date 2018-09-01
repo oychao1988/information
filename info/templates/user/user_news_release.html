@@ -20,8 +20,6 @@
             <select class="sel_opt" name="category_id">
                 {% for category in data.categories %}
                     <option name='category_id' value="{{ category.id }}">{{ category.name }}</option>
-{#                    <option value="">分类二</option>#}
-{#                    <option value="">分类三</option>#}
                 {% endfor %}
             </select>
         </div>

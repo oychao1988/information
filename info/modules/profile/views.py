@@ -205,6 +205,7 @@ def news_release():
 
     # 创建新闻模型
     news = News()
+    news.user_id = user.id
     news.title = title
     news.digest = digest
     news.category_id = category_id
@@ -222,3 +223,38 @@ def news_release():
         return jsonify(errno=RET.DBERR, errmsg='保存新闻到数据库失败')
 
     return jsonify(errno=RET.OK, errmsg='新闻发布成功')
+
+@profile_bp.route('/news_list')
+@login_user_info
+def news_list():
+    user = g.user
+    # 检查用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+    # 获取参数
+    p = request.args.get('p', 1)
+
+    # 参数校验
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        p = 1
+    try:
+        paginate = News.query.filter(News.user_id==user.id).order_by(News.create_time.desc()).paginate(p, constants.OTHER_NEWS_PAGE_MAX_COUNT, False)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    news = paginate.items
+    total_page = paginate.pages
+    current_page = paginate.page
+    news_dict_list = []
+
+    for each_news in news if news else []:
+        news_dict_list.append(each_news.to_review_dict())
+    data = {
+        'news_list': news_dict_list,
+        'total_page': total_page,
+        'current_page': current_page
+    }
+    return render_template('user/user_news_list.html', data=data)
