@@ -272,11 +272,53 @@ $(function(){
 
         // 关注当前新闻作者
     $(".focus").click(function () {
-
+        var params = {
+            'author_id': $(this).attr('author-id'),
+            'action': 'follow',
+        }
+        $.ajax({
+            url: '/news/follow_user',
+            type: 'post',
+            data: JSON.stringify(params),
+            contentType: 'application/json',
+            dataType: 'json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno==0){
+                    $('.focus').hide()
+                    $('.focused').show()
+                }else if(resp.errno==4101){
+                    $('.login_form_con').show()
+                }else{
+                    console.log(resp.errmsg)
+                }
+            }
+        })
     })
 
     // 取消关注当前新闻作者
     $(".focused").click(function () {
-
+        var params = {
+            'author_id': $(this).attr('author-id'),
+            'action': 'unfollow',
+        }
+        $.ajax({
+            url: '/news/follow_user',
+            type: 'post',
+            data: JSON.stringify(params),
+            contentType: 'application/json',
+            dataType: 'json',
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function(resp){
+                if(resp.errno==0){
+                    $('.focus').show()
+                    $('.focused').hide()
+                }else if(resp.errno==4101){
+                    $('.login_form_con').show()
+                }else{
+                    console.log(resp.errmsg)
+                }
+            }
+        })
     })
 })

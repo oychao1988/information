@@ -43,6 +43,16 @@ def detail(news_id):
     if user and (news in user.collection_news):
         is_collected = True
 
+    # 查询关注信息
+    is_followed = False
+    if user:
+        try:
+            followed_list = user.followed.filter(User.id == user.id).all()
+        except Exception as e:
+            current_app.logger.error(e)
+        if user.id in followed_list:
+            is_followed = True
+
     # 查询评论信息
     comments = None
     try:
@@ -53,8 +63,9 @@ def detail(news_id):
     for comment in comments if comments else []:
         comment_dict_list.append(comment.to_dict())
 
-    # 查询点赞信息
+
     if user:
+        # 查询点赞信息
         commentLike_id = []
         # 在这条新闻内的评论
         comment_id = [comment.id for comment in comments]
@@ -67,7 +78,6 @@ def detail(news_id):
         for comment in comment_dict_list:
             if comment['id'] in commentLike_id:
                 comment['is_liked'] = True
-
     data = {
         'user_info': user.to_dict() if user else [],
         'newsClicksList': news_dict_list,
@@ -75,6 +85,7 @@ def detail(news_id):
         'is_collected': is_collected,
         'comments': comment_dict_list,
         'comment_count': len(comment_dict_list),
+        'is_followed': is_followed
     }
     return render_template('news/detail.html', data=data)
 
@@ -210,6 +221,7 @@ def comment_like():
                                                CommentLike.comment_id==comment_id).first()
         db.session.delete(commentLike)
         comment.like_count -= 1
+
     try:
         db.session.commit()
     except Exception as e:
@@ -218,3 +230,63 @@ def comment_like():
         return jsonify(errno=RET.DBERR, errmsg='数据库操作点赞数据失败')
 
     return jsonify(errno=RET.OK, errmsg='操作成功')
+
+
+@news_bp.route('/follow_user', methods=['POST'])
+@login_user_info
+def follow_user():
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
+    # 获取参数
+    params_dict = request.json
+    author_id = params_dict.get('author_id')
+    action = params_dict.get('action')
+    # 参数校验
+    if not all([author_id, action]):
+        return  jsonify(errno=RET.PARAMERR, errmsg='参数不足')
+    if action not in ['follow', 'unfollow']:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数错误')
+
+    try:
+        author = User.query.get(author_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询新闻作者失败')
+    if not author:
+        return jsonify(errno=RET.NODATA, errmsg='该作者不存在')
+
+    followed_list = []
+    follower_list = []
+
+    try:
+        followed_list = user.followed.all()
+        # follower_list = user.followers.filter(User.id == author.id).all()
+        follower_list = user.followers.all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询关注信息失败')
+
+    print('followed_list =', followed_list)
+    print('follower_list =', follower_list)
+    is_followed = False
+    if action == 'follow':
+        if user not in followed_list:
+            user.followed.append(author.id)
+            is_followed = True
+        print('follow')
+        print(user.followed)
+    else:
+        user.followed.remove(author)
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库修改关注信息失败')
+
+    data = {
+        'is_followed': is_followed,
+    }
+    return jsonify(errno=RET.OK, errmsg='操作成功', data=data)

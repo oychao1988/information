@@ -13,7 +13,7 @@
         <h3>{{ data.news.title }}</h3>
         <div class="detail_about clearfix">
             <span class="time_souce fl">{{ data.news.create_time }} 来源: {{ data.news.source }}</span>
-            <span class="comment fr">3</span>
+            <span class="comment fr">{{ data.news.clicks }}</span>
         </div>
         {{ data.news.content | safe }}
 
@@ -73,12 +73,15 @@
 {% block authorBlock %}
     <div class="author_card">
         <a href="#" class="author_pic"><img src="../../static/news/images/user_pic.png" alt="author_pic"></a>
-        <a href="#" class="author_name">张大山</a>
-        <div class="author_resume">张大山的简介,张大山</div>
-        <div class="writings"><span>总篇数</span><b>23</b></div>
-        <div class="follows"><span>粉丝</span><b>36</b></div>
-        <a href="javascript:;" class="focus fr">关注</a>
-        <a href="javascript:;" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
+        <a href="#" class="author_name">{{ data.news.author.nick_name}}</a>
+        <div class="author_resume">{{ data.news.author.signature }}</div>
+        <div class="writings"><span>总篇数</span><b>{{ data.news.author.news_count }}</b></div>
+        <div class="follows"><span>粉丝</span><b>{{ data.news.author.follews_count }}</b></div>
+        {% if not data.is_followed %}
+        <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focus fr">关注</a>
+        {% else %}
+        <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
+        {% endif %}
     </div>
 {% endblock %}
 
