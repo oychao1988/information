@@ -77,10 +77,10 @@
         <div class="author_resume">{{ data.news.author.signature }}</div>
         <div class="writings"><span>总篇数</span><b>{{ data.news.author.news_count }}</b></div>
         <div class="follows"><span>粉丝</span><b>{{ data.news.author.follews_count }}</b></div>
-        {% if not data.is_followed %}
-        <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focus fr">关注</a>
+        {% if data.is_followed %}
+            <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
         {% else %}
-        <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
+            <a href="javascript:;" author-id="{{ data.news.author.id }}" class="focus fr">关注</a>
         {% endif %}
     </div>
 {% endblock %}

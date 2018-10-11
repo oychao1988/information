@@ -276,6 +276,8 @@ $(function(){
             'author_id': $(this).attr('author-id'),
             'action': 'follow',
         }
+        console.log('author_id', params['author_id'])
+        console.log('follow')
         $.ajax({
             url: '/news/follow_user',
             type: 'post',
@@ -302,6 +304,8 @@ $(function(){
             'author_id': $(this).attr('author-id'),
             'action': 'unfollow',
         }
+        console.log('author_id', params['author_id'])
+        console.log('unfollow')
         $.ajax({
             url: '/news/follow_user',
             type: 'post',

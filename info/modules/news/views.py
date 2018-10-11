@@ -45,13 +45,16 @@ def detail(news_id):
 
     # 查询关注信息
     is_followed = False
+    followed_list = []
     if user:
         try:
-            followed_list = user.followed.filter(User.id == user.id).all()
+            followed_list = user.followed.all()
         except Exception as e:
             current_app.logger.error(e)
-        if user.id in followed_list:
+        if news.user in followed_list:
             is_followed = True
+    print('followed_list =', followed_list)
+    print('is_followed =', is_followed)
 
     # 查询评论信息
     comments = None
@@ -257,25 +260,17 @@ def follow_user():
         return jsonify(errno=RET.NODATA, errmsg='该作者不存在')
 
     followed_list = []
-    follower_list = []
-
     try:
         followed_list = user.followed.all()
-        # follower_list = user.followers.filter(User.id == author.id).all()
-        follower_list = user.followers.all()
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库查询关注信息失败')
 
-    print('followed_list =', followed_list)
-    print('follower_list =', follower_list)
     is_followed = False
     if action == 'follow':
         if user not in followed_list:
-            user.followed.append(author.id)
+            user.followed.append(author)
             is_followed = True
-        print('follow')
-        print(user.followed)
     else:
         user.followed.remove(author)
 
