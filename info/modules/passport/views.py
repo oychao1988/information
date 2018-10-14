@@ -41,7 +41,7 @@ def send_sms():
         return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
     if not re.match(r'^1[345678][0-9]{9}$', mobile):
         return jsonify(errno=RET.PARAMERR, errmsg='手机号格式错误')
-    print('params =', param_dict)
+    # print('params =', param_dict)
     try:
         real_image_code = redis_store.get('imageCodeId_%s' % image_code_id)
     except Exception as e:

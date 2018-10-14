@@ -38,7 +38,7 @@ def base_info():
     signature = params_dict.get('signature')
     nick_name = params_dict.get('nick_name')
     gender = params_dict.get('gender')
-    print(params_dict)
+    # print(params_dict)
     if not signature and not nick_name and not gender:
         return jsonify(errno=RET.PARAMERR, errmsg='参数不足')
 
@@ -185,7 +185,7 @@ def news_release():
     content = request.form.get('content')
     index_image = request.files.get('index_image')
     source = '个人发布'
-    print(request.form)
+    # print(request.form)
     # 校验参数
     if not all([title, category_id, digest, content, index_image]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数不足')

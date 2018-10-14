@@ -53,8 +53,8 @@ def detail(news_id):
             current_app.logger.error(e)
         if news.user in followed_list:
             is_followed = True
-    print('followed_list =', followed_list)
-    print('is_followed =', is_followed)
+    # print('followed_list =', followed_list)
+    # print('is_followed =', is_followed)
 
     # 查询评论信息
     comments = None
@@ -145,7 +145,7 @@ def news_comment():
     news_id = params_dict.get('news_id')
     content = params_dict.get('comment')
     parent_id = params_dict.get('parent_id')
-    print(params_dict)
+    # print(params_dict)
     # 验证用户是否登录
     if not user:
         return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
